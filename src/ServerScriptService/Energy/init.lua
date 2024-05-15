@@ -11,8 +11,6 @@ function Energy.new(): Energy
      return setmetatable(NewEnergy,Energy) :: Energy
 end
 
-function Energy:
-
 function Energy:Destroy(): ()
      table.clear(self)
 end

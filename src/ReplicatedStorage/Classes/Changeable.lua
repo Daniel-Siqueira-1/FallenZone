@@ -10,7 +10,7 @@ export type Changeable = {
      Start: (self: Changeable, Amount: number, Rate: number)->();
      Stop: (self: Changeable)->();
 
-     ValueBase: NumberValue,
+     Object: NumberValue,
 }
 
 local function GetSize(Dictionary: {[any]: any}): number
@@ -23,10 +23,14 @@ local function GetSize(Dictionary: {[any]: any}): number
      return Size
 end
 
-function Changeable.new(ValueBase: ValueBase): Changeable
+function Changeable.new(Object: NumberValue): Changeable
      local NewChangeable: any = {
-          
-          ValueBase = ValueBase
+          Enabled = false;
+          Object = Object;
+
+          Base = Object.Value;
+
+          __tasks = {}
      }
 
      return setmetatable(NewChangeable,Changeable) :: Changeable
@@ -61,6 +65,19 @@ function Changeable:Stop(TaskID: string): ()
           if GetSize(self.__tasks) == 0 then
                self.Enabled = false
           end
+     end
+end
+
+function Changeable:Regenerate(Amount: number, Rate: number): ()
+     while self.Object.Value < self.Base do
+          if self.Enabled then
+               break
+          end
+          
+          local CurrentAmount: number = self.Object.Value
+          local RegeneratedAmount: number = math.clamp(CurrentAmount + Amount, 0, self.Base)
+
+          self.Object.Value = RegeneratedAmount
      end
 end
 

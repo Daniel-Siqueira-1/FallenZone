@@ -1,3 +1,4 @@
 return {
-    RunCost = 5
+    RunCost = 5,
+    Rate = 1
 }

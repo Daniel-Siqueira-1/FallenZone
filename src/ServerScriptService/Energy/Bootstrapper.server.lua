@@ -28,9 +28,9 @@ local function OnPlayerRun(Player: Player, State: boolean): ()
     local Energy: Changeable = EnergyCache[Player]
 
     if State then
-        Energy:Start(Config.RunCost)
+        Energy:Start(Config.RunCost, Config.Rate)
     else
-        Energy
+        Energy:Stop()
     end
 end
 
