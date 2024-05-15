@@ -1,32 +1,67 @@
+local HttpService = game:GetService("HttpService")
 local Changeable = {}
 Changeable.__index = Changeable
 
 export type Changeable = {
      Destroy: (self: Changeable)->(),
-     Start: (self: Changeable, Amount: number)->(),
+
+     Enabled: boolean;
+
+     Start: (self: Changeable, Amount: number, Rate: number)->();
+     Stop: (self: Changeable)->();
+
      ValueBase: NumberValue,
 }
 
+local function GetSize(Dictionary: {[any]: any}): number
+     local Size: number = 0;
+
+     for _,_ in Dictionary do
+          Size += 1
+     end
+
+     return Size
+end
+
 function Changeable.new(ValueBase: ValueBase): Changeable
      local NewChangeable: any = {
-        ValueBase = ValueBase
+          
+          ValueBase = ValueBase
      }
 
      return setmetatable(NewChangeable,Changeable) :: Changeable
 end
 
-function Changeable:Start(Amount: number): boolean
-    local Remaining = self.ValueBase.Value - Amount
-    if Remaining >= 0 then
-        self.ValueBase.Value = Remaining
-        return true
-    end
+function Changeable:Start(Amount: number, Rate: number): ()
+     Rate = 60 / (Rate * 60)
 
-    return false
+     local TaskID: string = HttpService:GenerateGUID()
+
+     local TaskThread: thread = task.spawn(function(): ()
+          while self.ValueBase.Value >= 0 do
+               local Remaining: number = self.ValueBase.Value - Amount
+               self.ValueBase.Value = Remaining
+
+               task.wait(Rate)
+          end
+
+          self:Stop(TaskID)
+     end)
+
+     self.__tasks[TaskID] = TaskThread
+     self.Enabled = true
 end
 
-function Changeable:Stop(): ()
-    
+function Changeable:Stop(TaskID: string): ()
+     local TaskThread: thread = self.__tasks[TaskID]
+     if TaskThread then
+          task.cancel(TaskThread)
+          self.__tasks[TaskID] = nil
+
+          if GetSize(self.__tasks) == 0 then
+               self.Enabled = false
+          end
+     end
 end
 
 function Changeable:Destroy(): ()

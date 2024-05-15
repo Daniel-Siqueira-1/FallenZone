@@ -92,7 +92,7 @@ local function Instantiate(Data: {[string]: any},Parent: Folder): BaseValue | Fo
                     Data[i] = NewValue
                 end)
                 
-                ObjectValue.Destroying:Connect(function()
+                ObjectValue.Destroying:Connect(function(): ()
                     Data[i] = nil
                 end)
 
