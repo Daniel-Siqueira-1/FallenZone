@@ -41,6 +41,11 @@ function Changeable:Start(Amount: number, Rate: number): ()
 
      local TaskID: string = HttpService:GenerateGUID()
 
+     if self.__regenthread then
+          task.cancel(self.__regenthread)
+          self.__regenthread = nil
+     end
+
      local TaskThread: thread = task.spawn(function(): ()
           while self.ValueBase.Value >= 0 do
                local Remaining: number = self.ValueBase.Value - Amount
@@ -64,6 +69,8 @@ function Changeable:Stop(TaskID: string): ()
 
           if GetSize(self.__tasks) == 0 then
                self.Enabled = false
+
+               self.__regenthread = task.delay(3, self.Regenerate,self)
           end
      end
 end
